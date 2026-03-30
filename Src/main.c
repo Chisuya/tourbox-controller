@@ -23,19 +23,33 @@
 #define GPIOA_MODER     (*(volatile unsigned int *)(GPIOA_BASE + 0x00))
 #define GPIOA_ODR       (*(volatile unsigned int *)(GPIOA_BASE + 0x14))
 
+#define GPIOC_BASE		0x48000800
+#define GPIOC_MODER     (*(volatile unsigned int *)(GPIOC_BASE + 0x00))
+#define GPIOC_IDR       (*(volatile unsigned int *)(GPIOC_BASE + 0x10))
+
 int main(void)
 {
-    // Enable GPIOA clock
-    RCC_AHB2ENR |= (1 << 0);
-
-    // Set PA5 as output
-    GPIOA_MODER &= ~(0x3 << 10);
-    GPIOA_MODER |=  (0x1 << 10);
+    // Enable GPIO clock
+//	RCC->AHB2ENR |= (1<<2);
+//	RCC->AHB2ENR |= 1;
+		//Cleaner version
+	RCC_AHB2ENR |= (1<<2) | (1<<0);
+	// Register and Set PC13 Pin
+	GPIOC_MODER &= ~(0b11<<26);
+	GPIOA_MODER &= ~(0b11<<10);
+	GPIOA_MODER |= (0b01<<10);
 
     // Blink forever
     for(;;)
     {
-        GPIOA_ODR ^= (1 << 5);
-        for(volatile int i = 0; i < 100000; i++);
+    	// Input Data reading
+		if (GPIOC_IDR & (1<<13)){
+			// LED turns on
+			GPIOA_ODR |= (1<<5);
+		}
+		else{
+			// LED turns off
+			GPIOA_ODR &= ~(1<<5);
+		}
     }
 }
